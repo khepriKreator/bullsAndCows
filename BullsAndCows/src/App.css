@@ -79,3 +79,15 @@
   font-weight: bold;
   margin: 0
 }
+
+input:focus {
+  outline: 0;
+}
+
+button:focus :focus-visible {
+  outline: 0 !important;
+}
+
+.win {
+  color: white;
+}
