@@ -42,23 +42,23 @@
 }
 
 .gameWindow {
-  width: 400px;
   height: 400px;
+  min-width: 600px;
   background-color: chocolate;
   border-radius: 40px;
   display: flex;
-  flex-direction: column;
-  row-gap: 10px;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
 }
 
 .gameInterface {
   display: flex;
   flex-direction: column;
+  width: 50%;
   row-gap: 10px;
   align-items: center;
   justify-content: center;
+  padding-left: 20px
 }
 
 .input {
@@ -75,6 +75,7 @@
 }
 
 .result {
+  font-size: 15px;
   color: white;
   font-weight: bold;
   margin: 0
@@ -90,4 +91,31 @@ button:focus :focus-visible {
 
 .win {
   color: white;
+}
+
+.gameLog {
+  height: 100%;
+  width: 50%;
+  border: 1px solid chocolate;
+  color: chocolate;
+  background-color: white;
+  border-radius: 40px;
+
+}
+
+.gameLog p {
+  margin: 0;
+  padding: 0;
+
+}
+
+.link {
+  color: black;
+  background-color: white;
+  padding: 10px;
+  border-radius: 7px;
+}
+
+.link:hover {
+  color: chocolate;
 }
