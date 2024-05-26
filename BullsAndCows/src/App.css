@@ -51,6 +51,11 @@
   justify-content: space-between;
 }
 
+.start {
+  width: 100%;
+  text-align: center;
+}
+
 .gameInterface {
   display: flex;
   flex-direction: column;
@@ -91,6 +96,7 @@ button:focus :focus-visible {
 
 .win {
   color: white;
+  width: 100%;
 }
 
 .gameLog {
@@ -100,13 +106,14 @@ button:focus :focus-visible {
   color: chocolate;
   background-color: white;
   border-radius: 40px;
-
 }
 
 .gameLog p {
   margin: 0;
   padding: 0;
-
+  padding-left: 10px;
+  font-size: 12px;
+  text-align: start;
 }
 
 .link {
