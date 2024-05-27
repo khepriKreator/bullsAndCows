@@ -94,18 +94,20 @@ button:focus :focus-visible {
   outline: 0 !important;
 }
 
-.win {
+.final {
   color: white;
   width: 100%;
 }
 
 .gameLog {
   height: 100%;
-  width: 50%;
+  width: 70%;
   border: 1px solid chocolate;
   color: chocolate;
   background-color: white;
   border-radius: 40px;
+  overflow-y: scroll;
+  scrollbar-width: none;
 }
 
 .gameLog p {

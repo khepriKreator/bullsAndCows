@@ -13,7 +13,6 @@ type GameLog = {
     answer: number;
     bulls: number;
     cows: number;
-    tries: number;
     error: Error;
 }
 const getRandomNumber = (min?: number) => {
@@ -59,11 +58,10 @@ class GameStore {
             bulls: 0,
             cows: 0,
             error: this.isValidAnswer(answer),
-            tries: this.tries,
         }
     }
     compareNumbersAndPushToGameLog(answer: number[]) {
-        this.tries++;
+        this.tries++
         const log: GameLog = this.createLog(answer);
         answer.forEach((numb, i) => {
             if (this.hiddenNumber.indexOf(numb) !== -1) {
@@ -116,6 +114,9 @@ class GameStore {
     isWin() {
         return this.gameLog[this.gameLog.length - 1].bulls === 4
     }
+    isLose() {
+        return this.tries === 10;
+    }
 }
 
 const gameStore = new GameStore();
@@ -137,7 +138,7 @@ const GameLog = () => {
                 <div className={'gameLog'}>
                     <div><strong>Console</strong></div>
                     {
-                        gameStore.gameLog.map((item, index) => <p key={index}>Answer: {item.answer}, {item.error.isError ? `Message: ${item.error.message}` : `Bulls: ${item.bulls}, Cows: ${item.cows}, Tries: ${item.tries}`}</p>)
+                        gameStore.gameLog.map((item, index) => <p key={index}>Answer: {item.answer}, {item.error.isError ? `Message: ${item.error.message}, Tries: ${index + 1}` : `Bulls: ${item.bulls}, Cows: ${item.cows}, Tries: ${index + 1}`}</p>)
                     }
                 </div>
     )
@@ -157,6 +158,9 @@ const GameInterface = observer(() => {
         setResult(gameStore.createResult())
         if (gameStore.isWin()) {
             navigate('/win');
+        }
+        if (gameStore.isLose()) {
+            navigate('/lose')
         }
     }
     return (
@@ -192,8 +196,19 @@ const GameInterface = observer(() => {
 
 const WinWindow = () => {
     return (
-        <div className={'win'}>
+        <div className={'final'}>
             <h1 >You win!</h1>
+            <Link to={'/game'} className={'link'}>
+                New game
+            </Link>
+        </div>
+    )
+}
+
+const LoseWindow = () => {
+    return (
+        <div className={'final'}>
+            <h1 >Maybe next time...</h1>
             <Link to={'/game'} className={'link'}>
                 New game
             </Link>
@@ -213,6 +228,10 @@ const routerConfig = createBrowserRouter([
     {
         path: 'win',
         element: <WinWindow/>
+    },
+    {
+        path: 'lose',
+        element: <LoseWindow/>
     }
 ])
 
