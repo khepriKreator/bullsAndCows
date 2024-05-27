@@ -4,13 +4,17 @@ import {useEffect, useState} from "react";
 import './App.css'
 import {createBrowserRouter, Link, RouterProvider, useNavigate} from "react-router-dom";
 
+type Error = {
+    isError: boolean;
+    message: string;
+}
+
 type GameLog = {
     answer: number;
-    bulls?: number;
-    cows?: number;
-    tries?: number;
-    isError: boolean;
-    errorMessage?: string;
+    bulls: number;
+    cows: number;
+    tries: number;
+    error: Error;
 }
 const getRandomNumber = (min?: number) => {
     let number = Math.floor(Math.random() * 10);
@@ -24,23 +28,16 @@ const getRandomNumber = (min?: number) => {
 }
 class GameStore {
     hiddenNumber: number[] = [];
-    cows: number = 0;
-    bulls: number = 0;
-    answer: number = 0;
     tries: number = 0;
-    isError: boolean = false;
-    errorMessage: string = '';
-    gameLog:    Array<GameLog> = [];
+    gameLog: Array<GameLog> = [];
     constructor() {
         makeObservable(this, {
             hiddenNumber: observable,
-            bulls: observable,
-            compareNumbers: action,
+            compareNumbersAndPushToGameLog: action,
         })
     }
     generateUniqueNumber() {
         this.hiddenNumber.splice(0,4);
-        this.resetCount();
         for (let i = 0; this.hiddenNumber.length < 4 ; i++) {
             if (this.hiddenNumber.length === 0) {
                 this.hiddenNumber.push(getRandomNumber(1))
@@ -56,29 +53,34 @@ class GameStore {
         }
         console.log(this.hiddenNumber)
     }
-    compareNumbers(answer: number[]) {
-        if (!this.isValidAnswer(answer)) {
-            return 'Invalid answer';
+    createLog(answer: number[]): GameLog {
+        return {
+            answer: Number(answer.join('')),
+            bulls: 0,
+            cows: 0,
+            error: this.isValidAnswer(answer),
+            tries: this.tries,
         }
-        this.answer = Number(answer.join(''))
+    }
+    compareNumbersAndPushToGameLog(answer: number[]) {
         this.tries++;
+        const log: GameLog = this.createLog(answer);
         answer.forEach((numb, i) => {
             if (this.hiddenNumber.indexOf(numb) !== -1) {
-                this.hiddenNumber.indexOf(numb) === i ? this.bulls++ : this.cows++;
+                this.hiddenNumber.indexOf(numb) === i ? log.bulls++ : log.cows++;
             }
         })
-        return `Your answer has ${this.bulls} bull(s) and ${this.cows} cow(s)!`
+        this.gameLog.push(log);
     }
-    pushResultToGameLog() {
-        if (this.isError) {
-            this.gameLog.push({answer: this.answer, errorMessage: this.errorMessage, isError: this.isError})
-            return null;
-        }
-        this.gameLog.push({answer: this.answer, bulls: this.bulls, cows: this.cows, tries: this.tries, isError: false})
-    }
-
     resetGameLog() {
         this.gameLog.splice(0, this.gameLog.length);
+    }
+    createResult() {
+        const lastLog = this.gameLog[this.gameLog.length - 1]
+        if (lastLog.error.isError) {
+            return 'Invalid answer'
+        }
+        return `Bulls: ${lastLog.bulls}, Cows: ${lastLog.cows}`
     }
     isAnswerHasDuplicates(answer: number[]) {
         const result: boolean[] = [];
@@ -87,30 +89,32 @@ class GameStore {
         })
         return result.includes(true);
     }
-    isValidAnswer(answer: number[]): boolean {
+    isValidAnswer(answer: number[]): Error {
         if (answer.includes(NaN)) {
-            this.isError = true;
-            this.errorMessage = 'Invalid answer'
-            return false;
+            return {
+                isError: true,
+                message: 'Invalid answer',
+            };
         }
         if (answer.length < 4) {
-            this.isError = true;
-            this.errorMessage = 'Invalid number'
-            return false;
+            return {
+                isError: true,
+                    message: 'Invalid answer',
+            }
         }
         if (this.isAnswerHasDuplicates(answer)) {
-            this.isError = true;
-            this.errorMessage = 'Number has duplicates';
-            return false;
+            return {
+                isError: true,
+                    message: 'The answer has a duplicates',
+            }
         }
-        return true;
+        return {
+            isError: false,
+            message: 'Valid answer',
+        };
     }
-    resetCount() {
-        this.bulls = 0;
-        this.cows = 0;
-        this.answer = 0;
-        this.errorMessage = '';
-        this.isError = false;
+    isWin() {
+        return this.gameLog[this.gameLog.length - 1].bulls === 4
     }
 }
 
@@ -133,7 +137,7 @@ const GameLog = () => {
                 <div className={'gameLog'}>
                     <div><strong>Console</strong></div>
                     {
-                        gameStore.gameLog.map((item, index) => <p key={index}>Answer: {item.answer}, {item.isError ? `Message: ${item.errorMessage}` : `Bulls: ${item.bulls}, Cows: ${item.cows}, Tries: ${item.tries}`}</p>)
+                        gameStore.gameLog.map((item, index) => <p key={index}>Answer: {item.answer}, {item.error.isError ? `Message: ${item.error.message}` : `Bulls: ${item.bulls}, Cows: ${item.cows}, Tries: ${item.tries}`}</p>)
                     }
                 </div>
     )
@@ -142,24 +146,28 @@ const GameLog = () => {
 const GameInterface = observer(() => {
     const [inputValue, setInputValue] = useState('');
     const [result, setResult] = useState('');
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     useEffect(() => {
         gameStore.generateUniqueNumber();
         gameStore.resetGameLog();
     }, [])
     const handleSubmit = () => {
-        gameStore.answer = Number(inputValue);
         const answer = Array.from(inputValue, Number);
-        if (answer.length !== 0) setResult(gameStore.compareNumbers(answer));
-        if (gameStore.bulls === 4) {
+        gameStore.compareNumbersAndPushToGameLog(answer);
+        setResult(gameStore.createResult())
+        if (gameStore.isWin()) {
             navigate('/win');
         }
-        gameStore.pushResultToGameLog();
     }
     return (
         <div className={'gameWindow'}>
             <div className={'gameInterface'}>
                 <img className={'image'} src={'../public/image.jpg'} alt={'bull&cow'}/>
+                <div
+                    className={'result'}
+                >
+                    {(result !== '') && result}
+                </div>
                 <input
                     className={'input'}
                     type={'text'}
@@ -167,7 +175,6 @@ const GameInterface = observer(() => {
                     minLength={4}
                     value={inputValue}
                     onChange={(event) => {
-                        gameStore.resetCount()
                         setResult('')
                         setInputValue(event.target.value)
                     }}
@@ -177,9 +184,6 @@ const GameInterface = observer(() => {
                 >
                     Answer
                 </button>
-                <p
-                    className={'result'}
-                >{(result !== '') && result}</p>
             </div>
             <GameLog/>
         </div>

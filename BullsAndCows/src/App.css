@@ -76,10 +76,10 @@
 .image {
   width: 150px;
   border-radius: 10px;
-  margin-bottom: 30px;
 }
 
 .result {
+  height: 22px;
   font-size: 15px;
   color: white;
   font-weight: bold;
@@ -110,19 +110,18 @@ button:focus :focus-visible {
 
 .gameLog p {
   margin: 0;
-  padding: 0;
-  padding-left: 10px;
+  padding: 0 0 0 10px;
   font-size: 12px;
   text-align: start;
 }
 
-.link {
+.link, button {
   color: black;
   background-color: white;
   padding: 10px;
   border-radius: 7px;
 }
 
-.link:hover {
+.link:hover, button:hover {
   color: chocolate;
 }
